@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { AddressBar } from '@/components/chrome/AddressBar';
 import { BottomToolbar } from '@/components/chrome/BottomToolbar';
 import { HomeScreen } from '@/components/chrome/HomeScreen';
+import { BrowseSurface } from '@/components/chrome/BrowseSurface';
 import { TabsOverview } from '@/components/chrome/TabsOverview';
 import { MenuSheet } from '@/components/chrome/MenuSheet';
 import { HistoryScreen } from '@/components/chrome/HistoryScreen';
@@ -15,8 +16,7 @@ import { useBrowserStore } from '@/store/browserStore';
 
 /**
  * Nexora Browser 001
- * Permanent React chrome + one controlled WebView.
- * User never leaves the app.
+ * Permanent chrome + real browser engine (BrowseSurface / Capgo WebView).
  */
 export default function App() {
   const {
@@ -78,15 +78,10 @@ export default function App() {
       </header>
 
       <main className="flex-1 min-h-0 relative">
-        {showHome ? (
+        {showHome || !currentUrl ? (
           <HomeScreen />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-background">
-            <div className="text-center px-6">
-              <p className="text-sm text-muted-foreground mb-1">Browsing inside Nexora</p>
-              <p className="text-xs text-muted-foreground/70 truncate max-w-xs">{currentUrl}</p>
-            </div>
-          </div>
+          <BrowseSurface url={currentUrl} />
         )}
       </main>
 
