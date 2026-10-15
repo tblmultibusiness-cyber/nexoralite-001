@@ -13,7 +13,14 @@ import { useBrowserStore } from '@/store/browserStore';
 import { SessionManager } from '@/browser';
 
 export function MenuSheet() {
-  const { showMenu, setShowMenu, setShowHistory, setShowBookmarks, setShowSettings } = useBrowserStore();
+  const {
+    showMenu,
+    setShowMenu,
+    setShowHistory,
+    setShowBookmarks,
+    setShowSettings,
+    setShowPrivacy,
+  } = useBrowserStore();
 
   const items = [
     {
@@ -50,7 +57,14 @@ export function MenuSheet() {
         setShowSettings(true);
       },
     },
-    { icon: Shield, label: 'Privacy', action: () => setShowMenu(false) },
+    {
+      icon: Shield,
+      label: 'Privacy',
+      action: () => {
+        setShowMenu(false);
+        setShowPrivacy(true);
+      },
+    },
   ];
 
   return (
