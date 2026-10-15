@@ -5,6 +5,7 @@ import { HomeScreen } from '@/components/chrome/HomeScreen';
 import { TabsOverview } from '@/components/chrome/TabsOverview';
 import { MenuSheet } from '@/components/chrome/MenuSheet';
 import { HistoryScreen } from '@/components/chrome/HistoryScreen';
+import { BookmarksScreen } from '@/components/chrome/BookmarksScreen';
 import { BrowserController, SessionManager } from '@/browser';
 import { useBrowserStore } from '@/store/browserStore';
 
@@ -23,12 +24,14 @@ export default function App() {
     canGoBack,
     canGoForward,
     showHistory,
+    showBookmarks,
     setCurrentUrl,
     setShowHome,
     refreshTabs,
     setShowTabs,
     setShowMenu,
     setShowHistory,
+    setShowBookmarks,
     syncFromSession,
   } = useBrowserStore();
 
@@ -60,14 +63,12 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-background text-foreground overflow-hidden">
-      {/* Top chrome - always present */}
       <header className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/50">
         <div className="pt-[env(safe-area-inset-top)]">
           <AddressBar currentUrl={currentUrl} />
         </div>
       </header>
 
-      {/* Main surface */}
       <main className="flex-1 min-h-0 relative">
         {showHome ? (
           <HomeScreen />
@@ -81,7 +82,6 @@ export default function App() {
         )}
       </main>
 
-      {/* Bottom chrome - always present */}
       <footer className="shrink-0 z-20">
         <BottomToolbar
           canGoBack={canGoBack}
@@ -93,10 +93,10 @@ export default function App() {
         />
       </footer>
 
-      {/* Overlays */}
       <TabsOverview />
       <MenuSheet />
       <HistoryScreen open={showHistory} onClose={() => setShowHistory(false)} />
+      <BookmarksScreen open={showBookmarks} onClose={() => setShowBookmarks(false)} />
     </div>
   );
 }
