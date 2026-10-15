@@ -12,6 +12,7 @@ import { PrivacyScreen } from '@/components/chrome/PrivacyScreen';
 import { AIOrb } from '@/components/chrome/AIOrb';
 import { AIPanel } from '@/components/chrome/AIPanel';
 import { TopMenu } from '@/components/chrome/TopMenu';
+import { IncognitoBanner } from '@/components/chrome/IncognitoBanner';
 import { BrowserController, SessionManager } from '@/browser';
 import { useBrowserStore } from '@/store/browserStore';
 
@@ -88,6 +89,7 @@ export default function App() {
             </div>
           </div>
           <AddressBar currentUrl={currentUrl} />
+          <IncognitoBanner />
         </div>
       </header>
 
