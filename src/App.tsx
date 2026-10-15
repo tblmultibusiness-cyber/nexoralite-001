@@ -15,8 +15,11 @@ import { TopMenu } from '@/components/chrome/TopMenu';
 import { IncognitoBanner } from '@/components/chrome/IncognitoBanner';
 import { BrowserController, SessionManager } from '@/browser';
 import { useBrowserStore } from '@/store/browserStore';
+import { useBrowserLayout } from '@/hooks/useBrowserLayout';
 
 export default function App() {
+  const { headerRef, footerRef } = useBrowserLayout();
+
   const {
     currentUrl,
     showHome,
@@ -69,7 +72,10 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-background text-foreground overflow-hidden">
-      <header className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/50">
+      <header
+        ref={headerRef as React.RefObject<HTMLElement>}
+        className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/50"
+      >
         <div className="pt-[env(safe-area-inset-top)]">
           <div className="flex items-center justify-between px-3 pt-2">
             <h1 className="text-sm font-bold">
@@ -101,7 +107,7 @@ export default function App() {
         )}
       </main>
 
-      <footer className="shrink-0 z-20">
+      <footer ref={footerRef as React.RefObject<HTMLElement>} className="shrink-0 z-20">
         <BottomToolbar
           canGoBack={canGoBack}
           canGoForward={canGoForward}
