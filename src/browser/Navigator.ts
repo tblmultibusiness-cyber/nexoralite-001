@@ -1,12 +1,10 @@
 /**
- * Navigator
- * ---------
- * The ONLY public entry point for browsing in Nexora Browser 001.
+ * Navigator — ONLY public entry for browsing
  *
- * Every button, every address-bar submit, every link the user taps
- * must go through this file.
- *
- * Guarantee: content stays inside the app.
+ * AGREEMENT:
+ * Everything works inside the app.
+ * No system browser. No window.open. No external tabs.
+ * Every go / back / forward / newTab ends in BrowserController.
  */
 
 import { BrowserController } from './BrowserController';
@@ -22,7 +20,6 @@ const DEFAULT_ENGINE: SearchEngine = {
 let currentEngine: SearchEngine = DEFAULT_ENGINE;
 
 export const Navigator = {
-  /** Set the active search engine */
   setSearchEngine(engine: SearchEngine) {
     currentEngine = engine;
   },
@@ -32,41 +29,36 @@ export const Navigator = {
   },
 
   /**
-   * Main navigation method.
-   * Accepts either a full URL or a search query.
-   * Everything ends up inside the app WebView.
+   * Load anything the user typed or tapped — inside the app only.
    */
   async go(input: string): Promise<void> {
     const finalUrl = resolveInput(input, currentEngine);
     if (!finalUrl) return;
 
-    // Update session first
     SessionManager.updateActiveTab(finalUrl);
     SessionManager.pushHistory(finalUrl);
 
-    // Load inside the single controlled WebView
+    // Single path into the engine — never leaves the app
     await BrowserController.navigate(finalUrl);
   },
 
-  /** Open a brand-new tab and navigate */
   async newTab(input = ''): Promise<void> {
     const finalUrl = input ? resolveInput(input, currentEngine) : '';
     SessionManager.createTab(finalUrl || '');
     if (finalUrl) {
       await BrowserController.navigate(finalUrl);
+    } else {
+      await BrowserController.close();
     }
   },
 
   async back(): Promise<void> {
     const url = SessionManager.moveBack();
-    if (url === '') {
-      // Returned to empty state (home)
+    if (url === '' || url === null) {
       await BrowserController.close();
       return;
     }
-    if (url) {
-      await BrowserController.navigate(url);
-    }
+    await BrowserController.navigate(url);
   },
 
   async forward(): Promise<void> {
@@ -80,7 +72,6 @@ export const Navigator = {
     await BrowserController.reload();
   },
 
-  /** Current URL the user is looking at */
   getCurrentUrl(): string {
     return SessionManager.getCurrentUrl();
   },
