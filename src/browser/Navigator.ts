@@ -1,10 +1,6 @@
 /**
- * Navigator — ONLY public entry for browsing
- *
- * AGREEMENT:
- * Everything works inside the app.
- * No system browser. No window.open. No external tabs.
- * Every go / back / forward / newTab ends in BrowserController.
+ * Navigator — only public entry for browsing
+ * All paths end in BrowserController (in-app WebView only).
  */
 
 import { BrowserController } from './BrowserController';
@@ -28,17 +24,12 @@ export const Navigator = {
     return currentEngine;
   },
 
-  /**
-   * Load anything the user typed or tapped — inside the app only.
-   */
   async go(input: string): Promise<void> {
     const finalUrl = resolveInput(input, currentEngine);
     if (!finalUrl) return;
 
     SessionManager.updateActiveTab(finalUrl);
     SessionManager.pushHistory(finalUrl);
-
-    // Single path into the engine — never leaves the app
     await BrowserController.navigate(finalUrl);
   },
 
@@ -53,6 +44,11 @@ export const Navigator = {
   },
 
   async back(): Promise<void> {
+    // Prefer native WebView history (real page back)
+    const usedNative = await BrowserController.goBack();
+    if (usedNative) return;
+
+    // Fallback: app session history
     const url = SessionManager.moveBack();
     if (url === '' || url === null) {
       await BrowserController.close();
@@ -63,9 +59,7 @@ export const Navigator = {
 
   async forward(): Promise<void> {
     const url = SessionManager.moveForward();
-    if (url) {
-      await BrowserController.navigate(url);
-    }
+    if (url) await BrowserController.navigate(url);
   },
 
   async reload(): Promise<void> {
@@ -77,7 +71,7 @@ export const Navigator = {
   },
 
   canGoBack(): boolean {
-    return SessionManager.canGoBack();
+    return SessionManager.canGoBack() || BrowserController.isOpen();
   },
 
   canGoForward(): boolean {
