@@ -10,6 +10,7 @@ interface BrowserState {
   showTabs: boolean;
   showMenu: boolean;
   showHistory: boolean;
+  showBookmarks: boolean;
 
   setCurrentUrl: (url: string) => void;
   setShowHome: (v: boolean) => void;
@@ -19,6 +20,7 @@ interface BrowserState {
   setShowTabs: (v: boolean) => void;
   setShowMenu: (v: boolean) => void;
   setShowHistory: (v: boolean) => void;
+  setShowBookmarks: (v: boolean) => void;
   syncFromSession: () => void;
 }
 
@@ -31,6 +33,7 @@ export const useBrowserStore = create<BrowserState>((set) => ({
   showTabs: false,
   showMenu: false,
   showHistory: false,
+  showBookmarks: false,
 
   setCurrentUrl: (url) => set({ currentUrl: url, showHome: !url }),
   setShowHome: (v) => set({ showHome: v }),
@@ -40,6 +43,7 @@ export const useBrowserStore = create<BrowserState>((set) => ({
   setShowTabs: (v) => set({ showTabs: v }),
   setShowMenu: (v) => set({ showMenu: v }),
   setShowHistory: (v) => set({ showHistory: v }),
+  setShowBookmarks: (v) => set({ showBookmarks: v }),
   syncFromSession: () =>
     set({
       tabs: SessionManager.getTabs(),
