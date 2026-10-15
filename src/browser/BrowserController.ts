@@ -1,13 +1,12 @@
 /**
  * BrowserController
  * -----------------
- * Owns the single persistent native WebView for Nexora Browser 001.
+ * Owns the SINGLE persistent native WebView for Nexora Browser 001.
  *
- * Design rules:
- * - Exactly one managed WebView for the whole browsing session.
- * - Never opens the system browser / Custom Tabs / SFSafariViewController.
- * - React chrome stays around this surface forever.
- * - All navigation goes through this controller.
+ * HARD RULE:
+ * Everything the user browses stays inside the app.
+ * Never open the system browser, Chrome Custom Tabs, or SFSafariViewController.
+ * Never call window.open.
  */
 
 import { Capacitor } from '@capacitor/core';
@@ -26,6 +25,7 @@ class BrowserControllerImpl {
   private currentUrl = '';
   private listeners = new Set<BrowserListener>();
   private isNative = Capacitor.isNativePlatform();
+  private isOpenFlag = false;
 
   /** Subscribe to navigation / lifecycle events */
   subscribe(listener: BrowserListener): () => void {
@@ -37,50 +37,66 @@ class BrowserControllerImpl {
     this.listeners.forEach((l) => l(event));
   }
 
-  /** Open or reuse the single managed WebView and load a URL */
+  /**
+   * Load a URL inside Nexora.
+   * This is the ONLY way content is shown to the user.
+   */
   async navigate(url: string): Promise<void> {
     if (!url) return;
 
-    this.currentUrl = url;
-
-    if (!this.isNative) {
-      // Web fallback: still keep everything inside the same origin if possible.
-      // In production we will use a full-screen iframe or a dedicated route.
-      // For now we log and keep the URL in state so the UI stays consistent.
-      console.info('[BrowserController] web navigate', url);
-      this.emit({ type: 'urlChange', url });
+    // Safety: never allow javascript: or data: schemes that could escape
+    if (/^(javascript|data|vbscript):/i.test(url)) {
+      console.warn('[BrowserController] blocked dangerous scheme', url);
       return;
     }
 
-    // Native path — always use openWebView (never system browser)
-    if (this.webViewId) {
-      // Future: if the plugin supports navigate-in-place we will use it.
-      // For now we re-open the same style of managed WebView.
-      // Capgo allows us to keep control and avoid system browser.
-      await this.close();
+    this.currentUrl = url;
+    this.emit({ type: 'urlChange', url });
+
+    if (!this.isNative) {
+      // Web build: we keep the URL in state.
+      // Later we will render a full-screen controlled surface.
+      // We deliberately do NOT call window.open.
+      console.info('[BrowserController] web navigate (stays in app)', url);
+      this.isOpenFlag = true;
+      return;
     }
 
-    const result = await InAppBrowser.openWebView({
-      url,
-      toolbarType: ToolBarType.NAVIGATION,
-      showReloadButton: true,
-      shareSubject: 'Shared from Nexora',
-      toolbarColor: '#0b0f1a',          // deep blue matching brand
-      toolbarTextColor: '#e2e8f0',
-      showArrow: true,
-      isPresentAfterPageLoad: false,
-      // We will later move this WebView behind React chrome with toBack / updateDimensions
-    });
+    // Native: always use managed WebView (never system browser)
+    try {
+      // Close previous instance if any so we keep exactly one
+      if (this.isOpenFlag) {
+        try {
+          await InAppBrowser.close();
+        } catch {
+          // ignore
+        }
+      }
 
-    // Capgo returns an id for the managed webview in newer versions
-    // @ts-expect-error — id may be present depending on plugin version
-    this.webViewId = result?.id ?? 'primary';
+      await InAppBrowser.openWebView({
+        url,
+        toolbarType: ToolBarType.NAVIGATION,
+        showReloadButton: true,
+        shareSubject: 'Shared from Nexora',
+        toolbarColor: '#0b0f1a',        // brand deep blue
+        toolbarTextColor: '#e2e8f0',
+        showArrow: true,
+        isPresentAfterPageLoad: false,
+        // Future: toBack + updateDimensions so React chrome stays on top
+      });
 
-    this.emit({ type: 'urlChange', url });
+      this.webViewId = 'primary';
+      this.isOpenFlag = true;
+      this.emit({ type: 'pageLoaded', url });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('[BrowserController] navigate failed', message);
+      this.emit({ type: 'pageError', url, error: message });
+    }
   }
 
   async goBack(): Promise<void> {
-    // Will be wired to native history once we have stable event listeners
+    // Will be connected to native history events
     console.info('[BrowserController] goBack');
   }
 
@@ -95,7 +111,7 @@ class BrowserControllerImpl {
   }
 
   async close(): Promise<void> {
-    if (this.isNative) {
+    if (this.isNative && this.isOpenFlag) {
       try {
         await InAppBrowser.close();
       } catch {
@@ -103,6 +119,7 @@ class BrowserControllerImpl {
       }
     }
     this.webViewId = null;
+    this.isOpenFlag = false;
     this.emit({ type: 'closed' });
   }
 
@@ -111,9 +128,9 @@ class BrowserControllerImpl {
   }
 
   isOpen(): boolean {
-    return this.webViewId !== null;
+    return this.isOpenFlag;
   }
 }
 
-/** Singleton instance used by the whole app */
+/** Singleton — the only browser surface in the entire app */
 export const BrowserController = new BrowserControllerImpl();
