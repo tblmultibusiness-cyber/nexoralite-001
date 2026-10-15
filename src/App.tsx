@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { AddressBar } from '@/components/chrome/AddressBar';
 import { BottomToolbar } from '@/components/chrome/BottomToolbar';
 import { HomeScreen } from '@/components/chrome/HomeScreen';
-import { BrowserController, SessionManager, Navigator } from '@/browser';
+import { TabsOverview } from '@/components/chrome/TabsOverview';
+import { MenuSheet } from '@/components/chrome/MenuSheet';
+import { BrowserController, SessionManager } from '@/browser';
+import { useBrowserStore } from '@/store/browserStore';
 
 /**
  * Nexora Browser 001
@@ -12,35 +15,46 @@ import { BrowserController, SessionManager, Navigator } from '@/browser';
  * User never leaves the app.
  */
 export default function App() {
-  const [currentUrl, setCurrentUrl] = useState('');
-  const [showHome, setShowHome] = useState(true);
-  const [tabCount, setTabCount] = useState(1);
-  const [canGoBack, setCanGoBack] = useState(false);
-  const [canGoForward, setCanGoForward] = useState(false);
+  const {
+    currentUrl,
+    showHome,
+    tabs,
+    canGoBack,
+    canGoForward,
+    setCurrentUrl,
+    setShowHome,
+    setCanGoBack,
+    setCanGoForward,
+    refreshTabs,
+    setShowTabs,
+    setShowMenu,
+    syncFromSession,
+  } = useBrowserStore();
 
-  // Keep UI in sync with BrowserController events
   useEffect(() => {
     const unsub = BrowserController.subscribe((event) => {
       if (event.type === 'urlChange') {
         setCurrentUrl(event.url);
-        setShowHome(!event.url);
-        setCanGoBack(Navigator.canGoBack());
-        setCanGoForward(Navigator.canGoForward());
-        setTabCount(SessionManager.getTabs().length);
+        syncFromSession();
       }
       if (event.type === 'closed') {
         setCurrentUrl('');
         setShowHome(true);
+        syncFromSession();
+      }
+      if (event.type === 'pageLoaded') {
+        syncFromSession();
       }
     });
     return unsub;
-  }, []);
+  }, [setCurrentUrl, setShowHome, syncFromSession]);
 
   const goHome = async () => {
     await BrowserController.close();
     setCurrentUrl('');
     setShowHome(true);
     SessionManager.updateActiveTab('');
+    refreshTabs();
   };
 
   return (
@@ -58,8 +72,6 @@ export default function App() {
           <HomeScreen />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-background">
-            {/* On native the real WebView is managed by BrowserController.
-                This placeholder keeps the React tree stable while the native surface is visible. */}
             <div className="text-center px-6">
               <p className="text-sm text-muted-foreground mb-1">Browsing inside Nexora</p>
               <p className="text-xs text-muted-foreground/70 truncate max-w-xs">{currentUrl}</p>
@@ -73,16 +85,16 @@ export default function App() {
         <BottomToolbar
           canGoBack={canGoBack}
           canGoForward={canGoForward}
-          tabCount={tabCount}
+          tabCount={tabs.length}
           onHome={goHome}
-          onTabs={() => {
-            // Tab overview will be added next
-          }}
-          onMenu={() => {
-            // Menu will be added next
-          }}
+          onTabs={() => setShowTabs(true)}
+          onMenu={() => setShowMenu(true)}
         />
       </footer>
+
+      {/* Overlays */}
+      <TabsOverview />
+      <MenuSheet />
     </div>
   );
 }
