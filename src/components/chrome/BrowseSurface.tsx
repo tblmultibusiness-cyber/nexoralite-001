@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Loader2, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { BrowserController } from '@/browser';
 
