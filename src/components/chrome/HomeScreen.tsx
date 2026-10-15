@@ -11,7 +11,7 @@ import {
 import { Navigator } from '@/browser';
 
 const GREETINGS = [
-  'Hey, let's browse smarter today.',
+  "Hey, let's browse smarter today.",
   'Your browser, kept simple.',
   'Everything stays inside Nexora.',
   'Ready when you are.',
