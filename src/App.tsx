@@ -6,14 +6,13 @@ import { TabsOverview } from '@/components/chrome/TabsOverview';
 import { MenuSheet } from '@/components/chrome/MenuSheet';
 import { HistoryScreen } from '@/components/chrome/HistoryScreen';
 import { BookmarksScreen } from '@/components/chrome/BookmarksScreen';
+import { SettingsScreen } from '@/components/chrome/SettingsScreen';
 import { BrowserController, SessionManager } from '@/browser';
 import { useBrowserStore } from '@/store/browserStore';
 
 /**
  * Nexora Browser 001
- * ------------------
- * Permanent React chrome.
- * One controlled native WebView for all browsing.
+ * Permanent React chrome + one controlled WebView.
  * User never leaves the app.
  */
 export default function App() {
@@ -25,6 +24,7 @@ export default function App() {
     canGoForward,
     showHistory,
     showBookmarks,
+    showSettings,
     setCurrentUrl,
     setShowHome,
     refreshTabs,
@@ -32,6 +32,7 @@ export default function App() {
     setShowMenu,
     setShowHistory,
     setShowBookmarks,
+    setShowSettings,
     syncFromSession,
   } = useBrowserStore();
 
@@ -97,6 +98,7 @@ export default function App() {
       <MenuSheet />
       <HistoryScreen open={showHistory} onClose={() => setShowHistory(false)} />
       <BookmarksScreen open={showBookmarks} onClose={() => setShowBookmarks(false)} />
+      <SettingsScreen open={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   );
 }
