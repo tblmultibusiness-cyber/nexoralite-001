@@ -7,6 +7,8 @@ import { MenuSheet } from '@/components/chrome/MenuSheet';
 import { HistoryScreen } from '@/components/chrome/HistoryScreen';
 import { BookmarksScreen } from '@/components/chrome/BookmarksScreen';
 import { SettingsScreen } from '@/components/chrome/SettingsScreen';
+import { AIOrb } from '@/components/chrome/AIOrb';
+import { AIPanel } from '@/components/chrome/AIPanel';
 import { BrowserController, SessionManager } from '@/browser';
 import { useBrowserStore } from '@/store/browserStore';
 
@@ -25,6 +27,7 @@ export default function App() {
     showHistory,
     showBookmarks,
     showSettings,
+    showAI,
     setCurrentUrl,
     setShowHome,
     refreshTabs,
@@ -33,6 +36,7 @@ export default function App() {
     setShowHistory,
     setShowBookmarks,
     setShowSettings,
+    setShowAI,
     syncFromSession,
   } = useBrowserStore();
 
@@ -94,11 +98,14 @@ export default function App() {
         />
       </footer>
 
+      <AIOrb onOpen={() => setShowAI(true)} />
+
       <TabsOverview />
       <MenuSheet />
       <HistoryScreen open={showHistory} onClose={() => setShowHistory(false)} />
       <BookmarksScreen open={showBookmarks} onClose={() => setShowBookmarks(false)} />
       <SettingsScreen open={showSettings} onClose={() => setShowSettings(false)} />
+      <AIPanel open={showAI} onClose={() => setShowAI(false)} />
     </div>
   );
 }
