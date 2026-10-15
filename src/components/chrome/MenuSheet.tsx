@@ -13,7 +13,7 @@ import { useBrowserStore } from '@/store/browserStore';
 import { SessionManager } from '@/browser';
 
 export function MenuSheet() {
-  const { showMenu, setShowMenu, setShowHistory, setShowBookmarks } = useBrowserStore();
+  const { showMenu, setShowMenu, setShowHistory, setShowBookmarks, setShowSettings } = useBrowserStore();
 
   const items = [
     {
@@ -42,7 +42,14 @@ export function MenuSheet() {
       },
     },
     { icon: Share2, label: 'Share', action: () => setShowMenu(false) },
-    { icon: Settings, label: 'Settings', action: () => setShowMenu(false) },
+    {
+      icon: Settings,
+      label: 'Settings',
+      action: () => {
+        setShowMenu(false);
+        setShowSettings(true);
+      },
+    },
     { icon: Shield, label: 'Privacy', action: () => setShowMenu(false) },
   ];
 
@@ -66,10 +73,7 @@ export function MenuSheet() {
           >
             <div className="flex items-center justify-between px-4 py-3">
               <h3 className="text-sm font-semibold">Menu</h3>
-              <button
-                onClick={() => setShowMenu(false)}
-                className="p-2 rounded-lg hover:bg-muted"
-              >
+              <button onClick={() => setShowMenu(false)} className="p-2 rounded-lg hover:bg-muted">
                 <X className="w-5 h-5" />
               </button>
             </div>
