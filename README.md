@@ -3,112 +3,88 @@
 **Professional in-app browser architecture**  
 All browsing happens inside the app. The user never leaves Nexora.
 
-This is a clean-slate redesign of the original Nexora Lite (`nexoralite`).  
-Same brand identity (deep blue → electric blue gradients, dark mode default, glowing accents).  
-Completely new internal architecture.
+Clean-slate redesign. Same brand identity (deep blue → electric blue, dark mode, glowing accents).
 
 ---
 
 ## Design Goal
 
-> Everything the user does stays inside Nexora.  
+> Everything stays inside Nexora.  
 > No system browser. No Chrome Custom Tabs. No SFSafariViewController.  
 > One persistent native WebView controlled by the app.
 
 ---
 
-## Architecture Overview
+## What is built
 
-```
-┌──────────────────────────────────────────────────────────┐
-│                  Nexora Browser 001 (React + Capacitor)           │
-│                                                                   │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │  Chrome UI (React) — always visible                         │  │
-│  │  • Address Bar + Search Engine Switcher                     │  │
-│  │  • Tabs                                                     │  │
-│  │  • AI Orb / Summary / Translation                           │  │
-│  │  • Bottom Toolbar (Back / Forward / Home / Menu)            │  │
-│  │  • Social Sidebar, Bookmarks, History, Settings             │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                                                                   │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │  Browser Surface (Native WebView)                           │  │
-│  │  • One persistent managed WebView (@capgo/inappbrowser)     │  │
-│  │  • Controlled entirely by React via BrowserController       │  │
-│  │  • Layered behind or under the React chrome                 │  │
-│  │  • Never opens system browser                               │  │
-│  └───────────────────────────────────────────────────────┘  │
-└───────────────────────────────────────────────────────────┘
-```
+### Core engine
+- `BrowserController` — single managed WebView, never opens system browser
+- `SessionManager` — tabs, history stack, incognito
+- `NavigationService` — address bar → URL
+- `Navigator` — **only** public entry point for all browsing
 
-### Key Components
+### Chrome UI (always on screen)
+- AddressBar + Search Engine Switcher (Google, Bing, DuckDuckGo, Brave, Ecosia, Yahoo, Yandex, Perplexity)
+- BottomToolbar (Back / Forward / Home / Tabs / Menu)
+- HomeScreen with Quick Access + tips
+- TabsOverview
+- MenuSheet
+- HistoryScreen
+- BookmarksScreen (localStorage)
+- SettingsScreen (dark mode)
+- PrivacyScreen
+- AIOrb + AIPanel (companion sheet)
 
-| Layer | Responsibility |
-|-------|----------------|
-| **BrowserController** | Owns the single native WebView lifecycle. open / navigate / back / forward / close / inject / message |
-| **Chrome UI** | React components that never leave the app (AddressBar, BottomToolbar, Tabs, AIOrb, etc.) |
-| **Navigation Service** | Resolves address-bar input → URL, decides search vs direct navigation |
-| **Session Manager** | Tabs, history stack, incognito isolation, bookmarks |
-| **Native Bridge** | Thin wrapper around `@capgo/inappbrowser` openWebView + events |
-
-### Core Rules
-
-1. There is **exactly one** managed WebView for browsing.
-2. All navigation goes through `BrowserController.navigate(url)`.
-3. React UI is the permanent chrome (address bar + toolbar always present).
-4. The native WebView is layered *behind* or *under* the React chrome using Capgo features (`toBack`, `updateDimensions`, `bringToFront`).
-5. Never call `window.open`, never call system browser APIs.
-6. Search results can be shown in React (proxy / CSE). Selecting a result loads the URL into the same WebView.
+### State
+- Zustand `browserStore` for reactive UI
 
 ---
 
-## Brand Identity (kept identical)
+## Architecture rules (enforced in code)
 
-- **Primary**: Deep blue → vibrant electric blue gradients  
-- **Accents**: Soft glowing teal / electric blue  
-- **Default mode**: Dark (battery friendly)  
-- **Logo & typography**: Same as original Nexora Lite  
-- **Feel**: Empowering, joyful, secure, companion-like
+1. Exactly one managed WebView
+2. All navigation goes through `Navigator.go()` → `BrowserController`
+3. React chrome never unmounts while browsing
+4. No `window.open`, no system browser APIs
+5. Dangerous schemes blocked
 
 ---
 
-## Tech Stack
+## Brand
+
+- Primary: deep blue → electric blue gradients
+- Accents: teal / electric blue glow
+- Default: dark mode
+- Feel: companion, secure, joyful
+
+---
+
+## Stack
 
 - React 18 + TypeScript + Vite
 - Capacitor 8
-- `@capgo/inappbrowser` (managed WebView with full control)
-- Tailwind + shadcn/ui
-- Framer Motion
-- Focused state management for the browser session
+- `@capgo/inappbrowser`
+- Tailwind + Framer Motion + Zustand + Lucide
 
 ---
 
-## Project Status
+## Run locally
 
-This repository is the **professional rewrite**.  
-Architecture first. Implementation follows the design above.
+```bash
+npm install
+npm run dev
+```
 
-### Next steps (in order)
+For native:
 
-1. Scaffold the Vite + Capacitor project with brand colors
-2. Implement `BrowserController` (single persistent WebView)
-3. Build the permanent Chrome UI (AddressBar + BottomToolbar)
-4. Wire navigation so every link stays inside the WebView
-5. Add in-app search results + AI features on top of the same surface
-
----
-
-## Difference from original `nexoralite`
-
-| Original | Nexora 001 |
-|----------|------------|
-| Opens a temporary InAppBrowser overlay | One permanent WebView owned by the app |
-| Returns to home screen after close | Chrome UI stays around the browsing surface |
-| Mixed system / in-app paths | Zero system browser paths |
-| Architecture grew organically | Designed from first principles for in-app browsing |
+```bash
+npx cap add android   # or ios
+npx cap sync
+npx cap open android
+```
 
 ---
 
-**Repository**: https://github.com/tblmultibusiness-cyber/nexoralite-001  
-**Original project**: https://github.com/tblmultibusiness-cyber/nexoralite
+## Repo
+
+https://github.com/tblmultibusiness-cyber/nexoralite-001
