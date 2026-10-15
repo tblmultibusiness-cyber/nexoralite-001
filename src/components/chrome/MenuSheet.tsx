@@ -13,10 +13,17 @@ import { useBrowserStore } from '@/store/browserStore';
 import { SessionManager } from '@/browser';
 
 export function MenuSheet() {
-  const { showMenu, setShowMenu, setShowHistory } = useBrowserStore();
+  const { showMenu, setShowMenu, setShowHistory, setShowBookmarks } = useBrowserStore();
 
   const items = [
-    { icon: BookOpen, label: 'Bookmarks', action: () => setShowMenu(false) },
+    {
+      icon: BookOpen,
+      label: 'Bookmarks',
+      action: () => {
+        setShowMenu(false);
+        setShowBookmarks(true);
+      },
+    },
     {
       icon: Clock,
       label: 'History',
