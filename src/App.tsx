@@ -4,6 +4,7 @@ import { BottomToolbar } from '@/components/chrome/BottomToolbar';
 import { HomeScreen } from '@/components/chrome/HomeScreen';
 import { TabsOverview } from '@/components/chrome/TabsOverview';
 import { MenuSheet } from '@/components/chrome/MenuSheet';
+import { HistoryScreen } from '@/components/chrome/HistoryScreen';
 import { BrowserController, SessionManager } from '@/browser';
 import { useBrowserStore } from '@/store/browserStore';
 
@@ -21,13 +22,13 @@ export default function App() {
     tabs,
     canGoBack,
     canGoForward,
+    showHistory,
     setCurrentUrl,
     setShowHome,
-    setCanGoBack,
-    setCanGoForward,
     refreshTabs,
     setShowTabs,
     setShowMenu,
+    setShowHistory,
     syncFromSession,
   } = useBrowserStore();
 
@@ -95,6 +96,7 @@ export default function App() {
       {/* Overlays */}
       <TabsOverview />
       <MenuSheet />
+      <HistoryScreen open={showHistory} onClose={() => setShowHistory(false)} />
     </div>
   );
 }
