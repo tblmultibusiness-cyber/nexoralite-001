@@ -11,13 +11,10 @@ import { SettingsScreen } from '@/components/chrome/SettingsScreen';
 import { PrivacyScreen } from '@/components/chrome/PrivacyScreen';
 import { AIOrb } from '@/components/chrome/AIOrb';
 import { AIPanel } from '@/components/chrome/AIPanel';
+import { TopMenu } from '@/components/chrome/TopMenu';
 import { BrowserController, SessionManager } from '@/browser';
 import { useBrowserStore } from '@/store/browserStore';
 
-/**
- * Nexora Browser 001
- * Permanent chrome + real browser engine (BrowseSurface / Capgo WebView).
- */
 export default function App() {
   const {
     currentUrl,
@@ -73,6 +70,23 @@ export default function App() {
     <div className="flex flex-col h-[100dvh] bg-background text-foreground overflow-hidden">
       <header className="shrink-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/50">
         <div className="pt-[env(safe-area-inset-top)]">
+          <div className="flex items-center justify-between px-3 pt-2">
+            <h1 className="text-sm font-bold">
+              <span className="text-blue-400">Nexora</span>{' '}
+              <span className="text-foreground">Browser</span>
+            </h1>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setShowTabs(true)}
+                className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-xs font-semibold"
+                aria-label="Tabs"
+              >
+                {tabs.length}
+              </button>
+              <TopMenu />
+            </div>
+          </div>
           <AddressBar currentUrl={currentUrl} />
         </div>
       </header>
