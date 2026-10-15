@@ -13,12 +13,19 @@ import { useBrowserStore } from '@/store/browserStore';
 import { SessionManager } from '@/browser';
 
 export function MenuSheet() {
-  const { showMenu, setShowMenu } = useBrowserStore();
+  const { showMenu, setShowMenu, setShowHistory } = useBrowserStore();
 
   const items = [
-    { icon: BookOpen, label: 'Bookmarks', action: () => {} },
-    { icon: Clock, label: 'History', action: () => {} },
-    { icon: Download, label: 'Downloads', action: () => {} },
+    { icon: BookOpen, label: 'Bookmarks', action: () => setShowMenu(false) },
+    {
+      icon: Clock,
+      label: 'History',
+      action: () => {
+        setShowMenu(false);
+        setShowHistory(true);
+      },
+    },
+    { icon: Download, label: 'Downloads', action: () => setShowMenu(false) },
     {
       icon: EyeOff,
       label: SessionManager.isIncognito() ? 'Exit Incognito' : 'Incognito',
@@ -27,9 +34,9 @@ export function MenuSheet() {
         setShowMenu(false);
       },
     },
-    { icon: Share2, label: 'Share', action: () => {} },
-    { icon: Settings, label: 'Settings', action: () => {} },
-    { icon: Shield, label: 'Privacy', action: () => {} },
+    { icon: Share2, label: 'Share', action: () => setShowMenu(false) },
+    { icon: Settings, label: 'Settings', action: () => setShowMenu(false) },
+    { icon: Shield, label: 'Privacy', action: () => setShowMenu(false) },
   ];
 
   return (
