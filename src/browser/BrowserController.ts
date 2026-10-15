@@ -21,7 +21,6 @@ export type BrowserEvent =
 export type BrowserListener = (event: BrowserEvent) => void;
 
 class BrowserControllerImpl {
-  private webViewId: string | null = null;
   private currentUrl = '';
   private listeners = new Set<BrowserListener>();
   private isNative = Capacitor.isNativePlatform();
@@ -85,7 +84,6 @@ class BrowserControllerImpl {
         // Future: toBack + updateDimensions so React chrome stays on top
       });
 
-      this.webViewId = 'primary';
       this.isOpenFlag = true;
       this.emit({ type: 'pageLoaded', url });
     } catch (err) {
@@ -118,7 +116,6 @@ class BrowserControllerImpl {
         // already closed
       }
     }
-    this.webViewId = null;
     this.isOpenFlag = false;
     this.emit({ type: 'closed' });
   }
