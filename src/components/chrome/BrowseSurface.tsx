@@ -1,8 +1,8 @@
 /**
  * BrowseSurface
- * The visible page area.
- * - Native: Capgo WebView is the real surface (opened by BrowserController).
- * - Web: full-area iframe so Google and other sites actually load in-app.
+ * Native: Capgo WebView is positioned between header/footer by BrowserController.
+ *         This React layer is transparent so the native page is visible.
+ * Web: iframe loads the page in-app (no window.open).
  */
 
 import { useEffect, useState } from 'react';
@@ -33,62 +33,57 @@ export function BrowseSurface({ url }: BrowseSurfaceProps) {
         setLoading(false);
         setError(ev.error);
       }
+      if (ev.type === 'urlChange') setLoading(true);
     });
     return unsub;
   }, []);
 
-  // On native the Capgo WebView is the real browser surface.
-  // We show a light status layer under the permanent chrome.
   if (isNative) {
+    // Transparent so the managed WebView (sized between chrome) is what the user sees
     return (
-      <div className="absolute inset-0 flex flex-col items-center justify-center bg-background">
+      <div className="absolute inset-0 pointer-events-none bg-transparent">
         {loading && (
-          <div className="flex flex-col items-center gap-3">
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto bg-background/90">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">Loading inside Nexora…</p>
-            <p className="text-xs text-muted-foreground/70 truncate max-w-xs px-4">{url}</p>
+            <p className="text-sm text-muted-foreground mt-3">Loading inside Nexora</p>
+            <p className="text-xs text-muted-foreground/70 truncate max-w-xs px-4 mt-1">{url}</p>
           </div>
         )}
         {error && (
-          <div className="flex flex-col items-center gap-3 px-6 text-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto bg-background px-6 text-center">
             <AlertTriangle className="w-8 h-8 text-destructive" />
-            <p className="text-sm font-medium">Could not load page</p>
-            <p className="text-xs text-muted-foreground">{error}</p>
+            <p className="text-sm font-medium mt-3">Could not load page</p>
+            <p className="text-xs text-muted-foreground mt-1">{error}</p>
             <button
+              type="button"
               onClick={() => BrowserController.navigate(url)}
-              className="mt-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm"
+              className="mt-4 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm"
             >
-              Retry
+              Retry in Nexora
             </button>
-          </div>
-        )}
-        {!loading && !error && (
-          <div className="text-center px-6">
-            <p className="text-sm text-muted-foreground mb-1">Page open in Nexora WebView</p>
-            <p className="text-xs text-muted-foreground/70 truncate max-w-xs">{url}</p>
           </div>
         )}
       </div>
     );
   }
 
-  // Web build: real iframe so the user can actually browse
   return (
     <div className="absolute inset-0 flex flex-col bg-background">
       {loading && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/80">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground mt-3">Loading…</p>
+          <p className="text-sm text-muted-foreground mt-3">Loading inside Nexora</p>
         </div>
       )}
       {error && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background px-6 text-center">
           <AlertTriangle className="w-8 h-8 text-destructive mb-3" />
-          <p className="text-sm font-medium mb-1">This site blocked the in-app view</p>
+          <p className="text-sm font-medium mb-1">Site blocked embedded view</p>
           <p className="text-xs text-muted-foreground mb-4">
-            Some sites (including Google) refuse to load in an iframe. On the installed app they open in Nexora’s own WebView.
+            On the installed app this opens in Nexora’s WebView and stays inside the app.
           </p>
           <button
+            type="button"
             onClick={() => {
               setError(null);
               setLoading(true);
