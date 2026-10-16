@@ -8,3 +8,6 @@ export { SessionManager } from './SessionManager';
 export type { Tab, HistoryEntry } from './SessionManager';
 
 export { Navigator } from './Navigator';
+
+export { ProxyService } from './ProxyService';
+export type { ProxyConfig, ProxyMode } from './ProxyService';
