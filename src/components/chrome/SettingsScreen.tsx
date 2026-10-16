@@ -11,8 +11,10 @@ import {
   Bell,
   ChevronDown,
   ChevronRight,
+  Globe2,
 } from 'lucide-react';
 import { Navigator } from '@/browser';
+import { ProxyService } from '@/browser/ProxyService';
 import { SEARCH_ENGINES } from '@/data/searchEngines';
 import { cn } from '@/lib/utils';
 
@@ -23,8 +25,11 @@ interface SettingsScreenProps {
 
 export function SettingsScreen({ open, onClose }: SettingsScreenProps) {
   const [engineOpen, setEngineOpen] = useState(true);
+  const [proxyOpen, setProxyOpen] = useState(false);
   const [engine, setEngine] = useState(Navigator.getSearchEngine());
   const [dark, setDark] = useState(true);
+  const [proxyOn, setProxyOn] = useState(ProxyService.isEnabled());
+  const [proxyBase, setProxyBase] = useState(ProxyService.getConfig().baseUrl);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -33,6 +38,17 @@ export function SettingsScreen({ open, onClose }: SettingsScreenProps) {
   const selectEngine = (e: typeof engine) => {
     setEngine(e);
     Navigator.setSearchEngine(e);
+  };
+
+  const toggleProxy = (on: boolean) => {
+    ProxyService.setEnabled(on);
+    setProxyOn(ProxyService.isEnabled());
+  };
+
+  const saveProxyBase = (value: string) => {
+    setProxyBase(value);
+    ProxyService.setBaseUrl(value);
+    setProxyOn(ProxyService.isEnabled());
   };
 
   return (
@@ -63,7 +79,6 @@ export function SettingsScreen({ open, onClose }: SettingsScreenProps) {
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 pb-8 space-y-1">
-            {/* Search engine */}
             <Section
               icon={Search}
               title="Search engine"
@@ -89,8 +104,57 @@ export function SettingsScreen({ open, onClose }: SettingsScreenProps) {
                   </button>
                 ))}
               </div>
+            </Section>
+
+            {/* Proxy / data mode — interim until full stack */}
+            <Section
+              icon={Globe2}
+              title="Proxy / data mode"
+              subtitle={proxyOn ? 'On — traffic via proxy' : 'Off — direct in-app WebView'}
+              open={proxyOpen}
+              onToggle={() => setProxyOpen((v) => !v)}
+            >
+              <p className="text-[11px] text-muted-foreground mb-3 px-1 leading-relaxed">
+                Optional. Use when the network is weak or you need a server in front of sites.
+                Native WebView works without this. Paste your proxy base URL when you have one.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => toggleProxy(!proxyOn)}
+                className={cn(
+                  'w-full flex items-center justify-between px-3 py-3 rounded-xl border text-sm mb-3',
+                  proxyOn ? 'border-primary bg-primary/10' : 'border-border bg-card'
+                )}
+              >
+                <span className="font-medium">{proxyOn ? 'Proxy on' : 'Proxy off'}</span>
+                <span
+                  className={cn(
+                    'w-10 h-6 rounded-full relative transition-colors',
+                    proxyOn ? 'bg-primary' : 'bg-muted'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all',
+                      proxyOn ? 'left-4' : 'left-0.5'
+                    )}
+                  />
+                </span>
+              </button>
+
+              <label className="text-xs font-medium px-1 block mb-1">Proxy base URL</label>
+              <input
+                value={proxyBase}
+                onChange={(e) => saveProxyBase(e.target.value)}
+                placeholder="https://your-proxy.example/p?url="
+                className="w-full px-3 py-2.5 rounded-xl border border-border bg-muted/40 text-sm outline-none focus:border-primary"
+                autoCapitalize="none"
+                autoCorrect="off"
+              />
               <p className="text-[11px] text-muted-foreground mt-2 px-1">
-                Used when you enter a search instead of a website address.
+                Example: https://proxy.yourdomain.com/fetch?url=
+                Your server should fetch the target page and return it (enough for now; improve later).
               </p>
             </Section>
 
@@ -130,11 +194,7 @@ function Section({
 }) {
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden mb-2">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex items-center gap-3 p-4 text-left"
-      >
+      <button type="button" onClick={onToggle} className="w-full flex items-center gap-3 p-4 text-left">
         <Icon className="w-5 h-5 text-primary shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium">{title}</p>
