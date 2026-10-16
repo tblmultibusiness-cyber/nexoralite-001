@@ -47,6 +47,11 @@ export default function App() {
   useEffect(() => {
     const unsub = BrowserController.subscribe((event) => {
       if (event.type === 'urlChange') {
+        // In-page navigations (user taps links inside WebView)
+        SessionManager.updateActiveTab(event.url);
+        if (event.url && event.url !== SessionManager.getCurrentUrl()) {
+          SessionManager.pushHistory(event.url);
+        }
         setCurrentUrl(event.url);
         syncFromSession();
       }
@@ -56,6 +61,8 @@ export default function App() {
         syncFromSession();
       }
       if (event.type === 'pageLoaded') {
+        SessionManager.updateActiveTab(event.url);
+        setCurrentUrl(event.url);
         syncFromSession();
       }
     });
